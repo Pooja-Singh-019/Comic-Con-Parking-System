@@ -1,0 +1,154 @@
+title Event Parking Management System
+
+event [icon: calendar, color: blue] {
+  event_id bigint pk
+  name string
+  starts_at datetime
+  ends_at datetime
+  location string
+  status string
+}
+
+parking_zone [icon: map-pin, color: green] {
+  zone_id bigint pk
+  event_id bigint fk
+  parent_zone_id bigint fk
+  name string
+  zone_type string
+  level_number int
+  status string
+}
+
+parking_spot [icon: square, color: green] {
+  spot_id bigint pk
+  zone_id bigint fk
+  spot_category_id bigint fk
+  spot_code string
+  operational_status string
+  is_reservable boolean
+  created_at datetime
+}
+
+parking_spot_category [icon: tag, color: gray] {
+  spot_category_id bigint pk
+  name string
+  description string
+  supports_ev boolean
+  is_accessible boolean
+  capacity_units int
+}
+
+vehicle [icon: truck, color: orange] {
+  vehicle_id bigint pk
+  vehicle_category_id bigint fk
+  plate_number string
+  plate_region string
+  owner_reference string
+  created_at datetime
+}
+
+vehicle_category [icon: layers, color: gray] {
+  vehicle_category_id bigint pk
+  name string
+  description string
+}
+
+spot_category_compatibility [icon: check-circle, color: gray] {
+  compatibility_id bigint pk
+  vehicle_category_id bigint fk
+  spot_category_id bigint fk
+  is_allowed boolean
+}
+
+parking_ticket_type [icon: settings, color: purple] {
+  ticket_type_id bigint pk
+  name string
+  ticket_mode string
+  max_entries int
+  allows_reentry boolean
+  requires_reserved_spot boolean
+}
+
+parking_ticket [icon: credit-card, color: purple] {
+  ticket_id bigint pk
+  event_id bigint fk
+  ticket_type_id bigint fk
+  vehicle_id bigint fk
+  ticket_code string
+  valid_from datetime
+  valid_until datetime
+  status string
+}
+
+parking_session [icon: clock, color: yellow] {
+  session_id bigint pk
+  event_id bigint fk
+  ticket_id bigint fk
+  vehicle_id bigint fk
+  spot_id bigint fk
+  entry_at datetime
+  exit_at datetime
+  status string
+  entry_gate string
+  exit_gate string
+}
+
+payment [icon: dollar-sign, color: green] {
+  payment_id bigint pk
+  session_id bigint fk
+  amount decimal
+  currency string
+  payment_method string
+  payment_status string
+  provider_reference string
+  paid_at datetime
+}
+
+parking_reservation [icon: bookmark, color: blue] {
+  reservation_id bigint pk
+  event_id bigint fk
+  spot_id bigint fk
+  vehicle_id bigint fk
+  ticket_id bigint fk
+  reserved_from datetime
+  reserved_until datetime
+  status string
+}
+
+parking_spot_status_history [icon: activity, color: gray] {
+  status_history_id bigint pk
+  spot_id bigint fk
+  old_status string
+  new_status string
+  changed_at datetime
+  changed_by string
+  reason string
+}
+
+event.event_id < parking_zone.event_id
+parking_zone.zone_id < parking_zone.parent_zone_id
+parking_zone.zone_id < parking_spot.zone_id
+
+parking_spot_category.spot_category_id < parking_spot.spot_category_id
+vehicle_category.vehicle_category_id < vehicle.vehicle_category_id
+
+vehicle_category.vehicle_category_id < spot_category_compatibility.vehicle_category_id
+parking_spot_category.spot_category_id < spot_category_compatibility.spot_category_id
+
+event.event_id < parking_ticket.event_id
+parking_ticket_type.ticket_type_id < parking_ticket.ticket_type_id
+vehicle.vehicle_id < parking_ticket.vehicle_id
+
+event.event_id < parking_session.event_id
+parking_ticket.ticket_id < parking_session.ticket_id
+vehicle.vehicle_id < parking_session.vehicle_id
+parking_spot.spot_id < parking_session.spot_id
+
+parking_session.session_id < payment.session_id
+
+event.event_id < parking_reservation.event_id
+parking_spot.spot_id < parking_reservation.spot_id
+vehicle.vehicle_id < parking_reservation.vehicle_id
+parking_ticket.ticket_id < parking_reservation.ticket_id
+
+parking_spot.spot_id < parking_spot_status_history.spot_id
