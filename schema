@@ -1,5 +1,6 @@
 title Event Parking Management System
 
+
 event [icon: calendar, color: blue] {
   event_id bigint pk
   name string
